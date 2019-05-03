@@ -1,0 +1,19 @@
+{
+  "name": "gitup",
+  "version": "1.0.0",
+  "description": "Git up to date fast.",
+  "main": "index.js",
+  "bin": {
+    "gitup": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "William Bert <william@spanishdict.com>",
+  "license": "ISC",
+  "dependencies": {
+    "pad-right": "0.2.2",
+    "simple-git": "1.110.0"
+  }
+}
