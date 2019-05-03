@@ -14,10 +14,13 @@ for each repo
 TODO
 - handle dirty working tree
 - handle being ahead of master
+- repos from config (cosmicconfig?)
+- concurrency
 
 */
 
 const path = require('path');
+const expandTilde = require('expand-tilde');
 const git = require('simple-git/promise');
 const pad = require('pad-right');
 
@@ -34,7 +37,7 @@ const repos = [
   'hegemone',
   'word-of-the-day',
 ];
-const basePath = '/Users/william/scm/sd';
+const basePath = path.join(expandTilde('~'), '/scm/sd');
 
 function notify(str, opts = { padRight: 0, newline: false }) {
   if (opts.newline) str += '\n';
