@@ -54,20 +54,15 @@ function doneOp() {
 }
 
 async function updateBranch(g, branchName) {
-  try {
-    let msg = branchName;
-    if (!g.isNotFirst) {
-      msg = `updating ${branchName}`;
-      g.isNotFirst = true;
-    }
-    startOp(msg);
-    await g.checkout(branchName);
-    await g.pull();
-    doneOp();
-  } catch (err) {
-    notify('󠁿❌ ');
-    console.error(err);
+  let msg = branchName;
+  if (!g.isNotFirst) {
+    msg = `updating ${branchName}`;
+    g.isNotFirst = true;
   }
+  startOp(msg);
+  await g.checkout(branchName);
+  await g.pull();
+  doneOp();
 }
 
 async function main() {
@@ -75,7 +70,7 @@ async function main() {
   const longestNameLength = 18;
   for (const repo of repos) {
     notify(`${repo}: `, { padRight: longestNameLength });
-    const g = git(path.join(basePath, repo));
+    const g = git(path.join(basePath, repo)).silent(true);
 
     const originalStatus = await g.status();
     const originalBranch = originalStatus.current;
@@ -86,22 +81,26 @@ async function main() {
     }
 
     for (const branch of branches) {
-      let status;
-      if (branch !== originalBranch) {
-        g.checkout(branch);
-        status = await g.status();
-      } else {
-        status = originalStatus;
-      }
+      try {
+        let status;
+        if (branch !== originalBranch) {
+          await g.checkout(branch);
+          status = await g.status();
+        } else {
+          status = originalStatus;
+        }
 
-      if (!status.tracking) continue;
-      if (status.behind > 0) {
-        await updateBranch(g, branch);
-      } else {
-        notify(`${branch} ✓ `);
+        if (!status.tracking) continue;
+        if (status.behind > 0) {
+          await updateBranch(g, branch);
+        } else {
+          notify(`${branch} ✓ `);
+        }
+      } catch (ex) {
+        notify(`X ${ex}`);
       }
     }
-    g.checkout(originalBranch);
+    await g.checkout(originalBranch);
     notify('done', { newline: true });
   }
 }
