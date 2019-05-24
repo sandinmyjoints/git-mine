@@ -76,8 +76,14 @@ async function syncBranch(g, branchName, numBehind) {
     `fetch origin ${branchName}:${branchName}`,
     'checkout --quiet -',
   ];
+  let errorFetching;
   for (const cmd of cmds) {
-    const result = await g.raw(cmd.split(' '));
+    let result;
+    try {
+      result = await g.raw(cmd.split(' '));
+    } catch (ex) {
+      result = ex;
+    }
     if (
       /fatal: ambiguous argument .+?: unknown revision or path not in the working tree./.test(
         result
@@ -86,8 +92,12 @@ async function syncBranch(g, branchName, numBehind) {
       // not tracking branch of same name
       return;
     }
-    if (/fatal|error/i.test(result)) throw new Error(result);
+    if (/fatal|error/i.test(result)) {
+      // faux-finally :)
+      errorFetching = new Error(result);
+    }
   }
+  if (errorFetching) throw errorFetching;
   doneOp();
 }
 
