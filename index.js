@@ -34,8 +34,8 @@ const repos = [
   'neodarwin',
   'sd-gimme-db',
   'sd-traductor',
-  'hegemone',
   'word-of-the-day',
+  'hegemone',
 ];
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
@@ -46,7 +46,7 @@ function notify(str, opts = { padRight: 0, newline: false }) {
 }
 
 function startOp(opStr) {
-  notify(`${opStr}: `);
+  notify(`${opStr} `);
 }
 
 function doneOp() {
@@ -54,14 +54,50 @@ function doneOp() {
 }
 
 async function updateBranch(g, branchName) {
-  let msg = branchName;
-  if (!g.isNotFirst) {
-    msg = `updating ${branchName}`;
-    g.isNotFirst = true;
-  }
-  startOp(msg);
+  startOp('⏩');
   await g.checkout(branchName);
   await g.pull();
+  doneOp();
+}
+
+async function behind(g, branchName) {
+  const cmd = `rev-list --left-only --count origin/${branchName}...${branchName}`.split(
+    ' '
+  );
+  const result = await g.raw(cmd);
+  if (/fatal|error/i.test(result)) throw new Error(result);
+  return parseInt(result.trim(), 10);
+}
+
+async function syncBranch(g, branchName, numBehind) {
+  startOp(`⏩︎ (${numBehind} behind)`);
+  const cmds = [
+    'checkout --quiet --detach',
+    `fetch origin ${branchName}:${branchName}`,
+    'checkout --quiet -',
+  ];
+  let errorFetching;
+  for (const cmd of cmds) {
+    let result;
+    try {
+      result = await g.raw(cmd.split(' '));
+    } catch (ex) {
+      result = ex;
+    }
+    if (
+      /fatal: ambiguous argument .+?: unknown revision or path not in the working tree./.test(
+        result
+      )
+    ) {
+      // not tracking branch of same name
+      return;
+    }
+    if (/fatal|error/i.test(result)) {
+      // faux-finally :)
+      errorFetching = new Error(result);
+    }
+  }
+  if (errorFetching) throw errorFetching;
   doneOp();
 }
 
@@ -71,6 +107,7 @@ async function main() {
   for (const repo of repos) {
     notify(`${repo}: `, { padRight: longestNameLength });
     const g = git(path.join(basePath, repo)).silent(true);
+    await g.fetch();
 
     const originalStatus = await g.status();
     const originalBranch = originalStatus.current;
@@ -81,27 +118,32 @@ async function main() {
     }
 
     for (const branch of branches) {
+      notify(`${branch} `);
       try {
-        let status;
-        if (branch !== originalBranch) {
-          await g.checkout(branch);
-          status = await g.status();
-        } else {
-          status = originalStatus;
-        }
+        // let status;
+        // if (branch !== originalBranch) {
+        //   await g.checkout(branch);
+        //   status = await g.status();
+        // } else {
+        //   status = originalStatus;
+        // }
 
-        if (!status.tracking) continue;
-        if (status.behind > 0) {
-          await updateBranch(g, branch);
+        // if (!status.tracking) continue;
+
+        // Only works with branches that track branches with the same name:
+        const numBehind = await behind(g, branch);
+        if (numBehind > 0) {
+          // await updateBranch(g, branch);
+          await syncBranch(g, branch, numBehind);
         } else {
-          notify(`${branch} ✓ `);
+          doneOp();
         }
       } catch (ex) {
-        notify(`X ${ex}`);
+        notify(ex);
       }
     }
-    await g.checkout(originalBranch);
-    notify('done', { newline: true });
+    // await g.checkout(originalBranch);
+    notify('', { newline: true });
   }
 }
 
