@@ -39,10 +39,11 @@ const repos = [
 ];
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
-function notify(str, opts = { padRight: 0, newline: false }) {
+function notify(str, opts = { padRight: 0, newline: false, isError: false }) {
   if (opts.newline) str += '\n';
   str = pad(str, opts.padRight, ' ');
-  process.stdout.write(str);
+  const outstream = opts.isError ? process.stderr : process.stdout;
+  outstream.write(str);
 }
 
 function startOp(opStr) {
@@ -139,7 +140,8 @@ async function main() {
           doneOp();
         }
       } catch (ex) {
-        notify(ex);
+        notify(ex, { isError: true });
+        // await restore(g);
       }
     }
     // await g.checkout(originalBranch);
