@@ -29,13 +29,15 @@ const repos = [
   'sd-router',
   'sd-playground',
   'atalanta',
-  'darwin',
   'sd-auth',
   'neodarwin',
   'sd-gimme-db',
+  'hegemone',
+  'po-intake',
+  'sd-ads',
   'sd-traductor',
   'word-of-the-day',
-  'hegemone',
+  'sd-suggest'
 ];
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
