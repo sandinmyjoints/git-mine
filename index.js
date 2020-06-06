@@ -37,8 +37,9 @@ const repos = [
   'sd-ads',
   'sd-traductor',
   'word-of-the-day',
-  'sd-suggest'
+  'sd-e2e-tests',
 ];
+
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
 function notify(str, opts = { padRight: 0, newline: false, isError: false }) {
