@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /*eslint no-console: 0*/
+const chunk = require('lodash.chunk');
 
 /*
 for each repo
@@ -42,26 +43,16 @@ const repos = [
 
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
-function notify(str, opts = { padRight: 0, newline: false, isError: false }) {
-  if (opts.newline) str += '\n';
-  str = pad(str, opts.padRight, ' ');
-  const outstream = opts.isError ? process.stderr : process.stdout;
+function write(str) {
+  // const outstream = opts.isError ? process.stderr : process.stdout;
+  const outstream = process.stdout;
   outstream.write(str);
 }
 
-function startOp(opStr) {
-  notify(`${opStr} `);
-}
-
-function doneOp() {
-  notify('✓ ');
-}
-
-async function updateBranch(g, branchName) {
-  startOp('⏩');
-  await g.checkout(branchName);
-  await g.pull();
-  doneOp();
+function notify(str, opts = { padRight: 0, newline: false, isError: false }) {
+  if (opts.newline) str += '\n';
+  str = pad(str, opts.padRight, ' ');
+  return str;
 }
 
 async function behind(g, branchName) {
@@ -73,8 +64,7 @@ async function behind(g, branchName) {
   return parseInt(result.trim(), 10);
 }
 
-async function syncBranch(g, branchName, numBehind) {
-  startOp(`⏩︎ (${numBehind} behind)`);
+async function syncBranch(g, branchName) {
   const cmds = [
     'checkout --quiet --detach',
     `fetch origin ${branchName}:${branchName}`,
@@ -102,54 +92,51 @@ async function syncBranch(g, branchName, numBehind) {
     }
   }
   if (errorFetching) throw errorFetching;
-  doneOp();
 }
 
 async function main() {
   // TODO compute this
   const longestNameLength = 18;
-  for (const repo of repos) {
-    notify(`${repo}: `, { padRight: longestNameLength });
-    const g = git(path.join(basePath, repo)).silent(true);
-    await g.fetch();
-
-    const originalStatus = await g.status();
-    const originalBranch = originalStatus.current;
-
-    const branches = [originalBranch];
-    if (originalBranch !== 'master') {
-      branches.unshift('master');
-    }
-
-    for (const branch of branches) {
-      notify(`${branch} `);
-      try {
-        // let status;
-        // if (branch !== originalBranch) {
-        //   await g.checkout(branch);
-        //   status = await g.status();
-        // } else {
-        //   status = originalStatus;
-        // }
-
-        // if (!status.tracking) continue;
-
-        // Only works with branches that track branches with the same name:
-        const numBehind = await behind(g, branch);
-        if (numBehind > 0) {
-          // await updateBranch(g, branch);
-          await syncBranch(g, branch, numBehind);
-        } else {
-          doneOp();
-        }
-      } catch (ex) {
-        notify(ex, { isError: true });
-        // await restore(g);
-      }
-    }
-    // await g.checkout(originalBranch);
-    notify('', { newline: true });
+  for (const repoBatch of chunk(repos, 4)) {
+    const promises = repoBatch.map(repo => gitRepo(repo, longestNameLength));
+    await Promise.all(promises).catch(err => console.error(err));
   }
+}
+
+async function gitRepo(repo, longestNameLength) {
+  let msg = '';
+  msg += notify(`${repo}: `, { padRight: longestNameLength });
+  const g = git(path.join(basePath, repo)).silent(true);
+  await g.fetch();
+
+  const originalStatus = await g.status();
+  const originalBranch = originalStatus.current;
+
+  const branches = [originalBranch];
+  if (originalBranch !== 'master') {
+    branches.unshift('master');
+  }
+
+  for (const branch of branches) {
+    msg += notify(`${branch} `);
+    try {
+      // Only works with branches that track branches with the same name:
+      const numBehind = await behind(g, branch);
+      if (numBehind > 0) {
+        msg += notify(`⏩︎ (${numBehind} behind)`);
+        await syncBranch(g, branch, numBehind);
+        msg += notify('✓ ');
+      } else {
+        msg += notify('✓ ');
+      }
+    } catch (ex) {
+      msg += notify(ex, { isError: true });
+      // await restore(g);
+    }
+  }
+  // await g.checkout(originalBranch);
+  msg += notify('', { newline: true });
+  write(msg);
 }
 
 main();
