@@ -123,7 +123,7 @@ async function gitRepo(repo, longestNameLength) {
       // Only works with branches that track branches with the same name:
       const numBehind = await behind(g, branch);
       if (numBehind > 0) {
-        msg += notify(`⏩︎ (${numBehind} behind)`);
+        msg += notify(`⏩︎(${numBehind} behind) `);
         await syncBranch(g, branch, numBehind);
         msg += notify('✓ ');
       } else {
