@@ -44,6 +44,10 @@ const repos = [
   'sd-classroom-e2e',
 ];
 
+const reposUsingMain = [
+  'sd-vocab-e2e'
+]
+
 const basePath = path.join(expandTilde('~'), '/scm/sd');
 
 function write(str) {
@@ -100,7 +104,7 @@ async function syncBranch(g, branchName) {
 async function main() {
   // TODO compute this
   const longestNameLength = 18;
-  for (const repoBatch of chunk(repos, 4)) {
+  for (const repoBatch of chunk(repos, 1)) {
     const promises = repoBatch.map(repo => gitRepo(repo, longestNameLength));
     await Promise.all(promises).catch(err => console.error(err));
   }
@@ -116,12 +120,13 @@ async function gitRepo(repo, longestNameLength) {
   const originalBranch = originalStatus.current;
 
   const branches = [originalBranch];
-  if (originalBranch !== 'master') {
-    branches.unshift('master');
+  const mainBranchName = reposUsingMain.includes(repo) ? 'main' : 'master'
+  if (originalBranch !== mainBranchName) {
+    branches.unshift(mainBranchName);
   }
 
   for (const branch of branches) {
-    msg += notify(`${branch} `);
+    msg += notify(`${branch} `, {padRight: 'master'.length + 1 });
     try {
       // Only works with branches that track branches with the same name:
       const numBehind = await behind(g, branch);
