@@ -6,15 +6,15 @@ const chunk = require('lodash.chunk');
 for each repo
 - fetch from origin
 - is origin/branch ahead? if yes,
-- is it currently on master? if yes,
-  - is origin/master ahead? if yes,
+- is it currently on main? if yes,
+  - is origin/main ahead? if yes,
 - if yes:
   - if not clean
-  - if origin/master is ahead, then do git pull
+  - if origin/main is ahead, then do git pull
 
 TODO
 - handle dirty working tree
-- handle being ahead of master
+- handle being ahead of main
 - repos from config (cosmicconfig?)
 - concurrency
 
@@ -36,7 +36,6 @@ const repos = [
   'hegemone',
   'po-intake',
   'sd-ads',
-  'sd-traductor',
   'word-of-the-day',
   'sd-e2e-tests',
   'sd-vocab-e2e',
@@ -45,7 +44,13 @@ const repos = [
 ];
 
 const reposUsingMain = [
-  'sd-vocab-e2e'
+  'sd-router',
+  'sd-playground',
+  'atalanta',
+  'sd-auth',
+  'po-intake',
+  'sd-vocab-e2e',
+  'sd-vocab-e2e',
 ]
 
 const basePath = path.join(expandTilde('~'), '/scm/sd');
