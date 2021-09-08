@@ -106,15 +106,6 @@ async function syncBranch(g, branchName) {
   if (errorFetching) throw errorFetching;
 }
 
-async function main() {
-  // TODO compute this
-  const longestNameLength = 18;
-  for (const repoBatch of chunk(repos, 1)) {
-    const promises = repoBatch.map(repo => gitRepo(repo, longestNameLength));
-    await Promise.all(promises).catch(err => console.error(err));
-  }
-}
-
 async function gitRepo(repo, longestNameLength) {
   let msg = '';
   msg += notify(`${repo}: `, { padRight: longestNameLength });
@@ -138,10 +129,8 @@ async function gitRepo(repo, longestNameLength) {
       if (numBehind > 0) {
         msg += notify(`⏩︎(${numBehind} behind) `);
         await syncBranch(g, branch, numBehind);
-        msg += notify('✓ ');
-      } else {
-        msg += notify('✓ ');
       }
+      msg += notify('✓ ');
     } catch (ex) {
       msg += notify(ex, { isError: true });
       // await restore(g);
@@ -150,6 +139,15 @@ async function gitRepo(repo, longestNameLength) {
   // await g.checkout(originalBranch);
   msg += notify('', { newline: true });
   write(msg);
+}
+
+async function main() {
+  // TODO compute this
+  const longestNameLength = 18;
+  for (const repoBatch of chunk(repos, 1)) {
+    const promises = repoBatch.map(repo => gitRepo(repo, longestNameLength));
+    await Promise.all(promises).catch(err => console.error(err));
+  }
 }
 
 main();
