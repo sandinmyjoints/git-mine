@@ -27,30 +27,29 @@ const pad = require('pad-right');
 
 // dir names
 const repos = [
-  // 'neodarwin',
-  'sd-router',
-  'sd-playground',
   'atalanta',
-  'sd-auth',
-  'sd-gimme-db',
-  'hegemone',
+  'pn-logging',
   'po-intake',
   'sd-ads',
+  'sd-auth',
+  'sd-gimme-db',
+  'sd-playground',
+  'sd-router',
+  'sd-vocab-e2e',
   'word-of-the-day',
   'sd-e2e-tests',
-  'sd-vocab-e2e',
-  'pn-logging',
-  'sd-classroom-e2e',
 ];
 
 const reposUsingMain = [
-  'sd-router',
-  'sd-playground',
   'atalanta',
-  'sd-auth',
+  'hegemone',
   'po-intake',
+  'sd-auth',
+  'sd-classroom-e2e',
+  'sd-playground',
+  'sd-router',
   'sd-vocab-e2e',
-  'sd-vocab-e2e',
+  'sd-e2e-tests',
 ]
 
 const basePath = path.join(expandTilde('~'), '/scm/sd');
