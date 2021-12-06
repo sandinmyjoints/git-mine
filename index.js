@@ -44,6 +44,7 @@ const reposUsingMain = [
   'atalanta',
   'hegemone',
   'po-intake',
+  'sd-ads',
   'sd-auth',
   'sd-classroom-e2e',
   'sd-playground',
