@@ -27,30 +27,38 @@ const pad = require('pad-right');
 
 // dir names
 const repos = [
-  'atalanta',
-  'pn-logging',
-  'po-intake',
-  'sd-ads',
-  'sd-auth',
-  'sd-gimme-db',
-  'sd-playground',
-  'sd-router',
-  'sd-vocab-e2e',
-  'word-of-the-day',
-  'sd-e2e-tests',
-];
-
-const reposUsingMain = [
-  'atalanta',
+  // 'atalanta',
   'hegemone',
   'po-intake',
   'sd-ads',
   'sd-auth',
   'sd-classroom-e2e',
+  'sd-e2e-tests',
+  'sd-gimme-db',
   'sd-playground',
   'sd-router',
+  'sd-scribe',
+  'sd-traductor',
   'sd-vocab-e2e',
+  'sd-auth-client',
+  'word-of-the-day',
+];
+
+const reposUsingMain = [
+  // 'atalanta',
+  'hegemone',
+  'po-intake',
+  'sd-ads',
+  'sd-auth',
+  'sd-classroom-e2e',
   'sd-e2e-tests',
+  'sd-playground',
+  'sd-router',
+  'sd-scribe',
+  'sd-traductor',
+  'sd-vocab-e2e',
+  'sd-auth-client',
+  'word-of-the-day',
 ]
 
 const basePath = path.join(expandTilde('~'), '/scm/sd');
